@@ -1,12 +1,11 @@
 import { Account, Avatars, Client, OAuthProvider } from "react-native-appwrite";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
-import { response } from "express";
 
 export const config = {
-  Platform: "com.rahul.Restate",
-  endpoint: process.env.VITE_APPWRITE_ENDPOINT!,
-  project: process.env.VITE_APPWRITE_PROJECT!,
+  Platform: "com.rahul.restate",
+  endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT!,
+  project: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID!,
 };
 
 export const client = new Client();
@@ -67,7 +66,7 @@ export async function logout() {
   }
 }
 
-export async function getUser() {
+export async function getCurrentUser() {
   try {
     const user = await account.get();
 
@@ -75,7 +74,7 @@ export async function getUser() {
       const userAvatar = avatar.getInitials(user.name);
 
       return {
-        ...response,
+        ...user,
         avatar: userAvatar.toString(),
       };
     }
