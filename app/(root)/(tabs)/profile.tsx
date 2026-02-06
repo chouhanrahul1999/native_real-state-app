@@ -5,12 +5,15 @@ import {
   Image,
   TouchableOpacity,
   ImageSourcePropType,
+  Alert,
 } from "react-native";
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import icons from "@/constants/icons";
-import images from "@/constants/images";
-import { settings } from "@/constants/data";
+import icons from "../../../constants/icons";
+import images from "../../../constants/images";
+import { settings } from "../../../constants/data";
+import { userGlobalContext } from "../../lib/global-provider";
+import { logout } from "../../lib/appwite";
 
 interface SettingItemProps {
   icon: ImageSourcePropType;
@@ -27,7 +30,10 @@ const SettingsItem = ({
   textStyles,
   showArrow = true,
 }: SettingItemProps) => (
-  <TouchableOpacity className="flex flex-row items-center justify-between py-4 px-2">
+  <TouchableOpacity
+    onPress={onPress}
+    className="flex flex-row items-center justify-between py-4 px-2"
+  >
     <View className="flex flex-row items-center gap-3">
       <Image source={icon} className="size-6" />
 
@@ -43,8 +49,20 @@ const SettingsItem = ({
 );
 
 const Profile = () => {
-  const handleLogout = () => {
-    // Add logout logic here
+  const { user, refetch } = userGlobalContext();
+
+  const handleLogout = async () => {
+    const result = await logout();
+
+    if (result) {
+      Alert.alert("Success", "You have been logged out successfully!");
+      refetch({});
+    } else {
+      Alert.alert(
+        "Error",
+        "An error occurred while logging out. Please try again.",
+      );
+    }
   };
 
   return (
@@ -61,16 +79,24 @@ const Profile = () => {
 
         <View className="flex-row justify-center mt-5">
           <View className="flex flex-col items-center relative mt-5">
-            <Image
-              source={images.avatar}
-              className="size-44 relative rounded-full"
-            />
+            {user?.avatar ? (
+              <Image
+                source={{ uri: user.avatar }}
+                className="size-44 relative rounded-full"
+              />
+            ) : (
+              <View className="size-44 relative rounded-full bg-purple-300 items-center justify-center">
+                <Text className="text-5xl font-rubik-bold text-white">
+                  {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '?'}
+                </Text>
+              </View>
+            )}
 
             <TouchableOpacity className="absolute bottom-11 right-2">
               <Image source={icons.edit} className="size-9" />
             </TouchableOpacity>
 
-            <Text className="text-2xl font-rubik-bold mt-2">Mark Henry</Text>
+            <Text className="text-2xl font-rubik-bold mt-2">{user?.name}</Text>
           </View>
         </View>
         <View className="flex flex-col mt-10">
@@ -88,7 +114,7 @@ const Profile = () => {
           <SettingsItem
             icon={icons.logout}
             title="Logout"
-            textStyles="text-denger"
+            textStyles="text-danger"
             showArrow={false}
             onPress={handleLogout}
           />

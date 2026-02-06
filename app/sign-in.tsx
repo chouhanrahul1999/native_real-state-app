@@ -8,22 +8,25 @@ import {
 } from "react-native";
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import images from "@/constants/images";
-import icons from "@/constants/icons";
-import { login } from "@/lib/appwite";
-import { userGlobalContext } from "@/lib/global-provider";
-import { Redirect } from "expo-router";
+import images from "../constants/images";
+import icons from "../constants/icons";
+import { login } from "./lib/appwite";
+import { userGlobalContext } from "./lib/global-provider";
+import { Redirect, router } from "expo-router";
 
 const Signin = () => {
+  const { refetch, loading, isLoggedIn } = userGlobalContext();
+
+  if (!loading && isLoggedIn) return <Redirect href="/" />;
+
   const handleLogin = async () => {
-    const { refetch, loading, isLoggedIn } = userGlobalContext();
-
-    if (!loading && isLoggedIn) return <Redirect href="/" />;
-
+    console.log("Login button pressed");
     const result = await login();
+    console.log("Login result:", result);
 
     if (result) {
-      refetch();
+      await refetch({});
+      router.replace("/(root)/(tabs)");
     } else {
       Alert.alert("Error", "Failed to login");
     }

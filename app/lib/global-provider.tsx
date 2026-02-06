@@ -1,4 +1,4 @@
-import { Children, createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext } from "react";
 import { useAppwrite } from "./useAppwrite";
 import { getCurrentUser } from "./appwite";
 

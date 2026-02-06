@@ -1,4 +1,4 @@
-import { userGlobalContext } from "@/lib/global-provider";
+import { userGlobalContext } from "../lib/global-provider";
 import { Redirect, Slot } from "expo-router";
 import { ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
