@@ -1,17 +1,35 @@
+import Search from "@/components/Search";
+import icons from "@/constants/icons";
+import images from "@/constants/images";
 import { Link } from "expo-router";
-import { Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index() {
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text className="font-rubik text-3xl bg-red-500">Welcome to ReState</Text>
-      <Link href="/sign-in">Signin</Link>
-    </View>
+    <SafeAreaView className="bg-white h-full">
+      <View className="px-5">
+        <View className="flex flex-row items-center justify-between mt-5">
+          <View className="flex flex-row items-center">
+            <Image source={images.avatar} className="size-12  rounded-full" />
+
+            <View className="flex flex-col items-start ml-2 justify-center">
+              <Text className="text-xs font-rubik text-black-100">
+                Good Morning
+              </Text>
+
+              <Text className="text-base font-rubik-medium text-black-300">
+                Rahul Singh
+              </Text>
+            </View>
+          </View>
+          <Image source={icons.bell} className="size-6" />
+        </View>
+      </View>
+      <View className="px-2">
+
+      <Search />
+      </View>
+    </SafeAreaView>
   );
 }
