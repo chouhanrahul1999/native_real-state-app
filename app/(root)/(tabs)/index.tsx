@@ -1,22 +1,59 @@
+import { getLatestProperties, getProperties } from "@/app/lib/appwite";
 import { userGlobalContext } from "@/app/lib/global-provider";
-import seed from "@/app/lib/seed";
+import { useAppwrite } from "@/app/lib/useAppwrite";
 import Card, { FeaturedCard } from "@/components/Card";
 import Filters from "@/components/Filters";
 import Search from "@/components/Search";
 import icons from "@/constants/icons";
 import images from "@/constants/images";
-import { Link } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect } from "react";
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index() {
   const { user } = userGlobalContext();
+  const params = useLocalSearchParams<{ query?: string; filter?: string }>();
+
+  const { data: latestProperty, loading: latestPropertiesLoading } =
+    useAppwrite({
+      fn: getLatestProperties,
+    });
+
+  const {
+    data: properties,
+    loading,
+    refetch,
+  } = useAppwrite({
+    fn: getProperties,
+    params: {
+      query: params.query || "",
+      filter: params.filter || "All",
+      limit: 6,
+    },
+    skip: true,
+  });
+
+  const handleCardPress = (id: string) => {
+    router.push(`/property/${id}` as any);
+  };
+
+  useEffect(() => {
+    refetch({
+      filter: params.filter!,
+      query: params.query!,
+      limit: 6,
+    });
+  }, []);
+
   return (
     <SafeAreaView className="bg-white h-full">
       <FlatList
-        data={[1, 2]}
-        renderItem={({ item }) => <Card />}
-        keyExtractor={(item) => item.toString()}
+        data={properties}
+        renderItem={({ item }) => (
+          <Card item={item} onPress={() => handleCardPress(item.$id)} />
+        )}
+        keyExtractor={(item) => item.$id}
         numColumns={2}
         contentContainerClassName="pb-32"
         columnWrapperClassName="flex gap-5 px-5"
@@ -57,9 +94,14 @@ export default function Index() {
               </View>
 
               <FlatList
-                data={[1, 2, 3]}
-                renderItem={({ item }) => <FeaturedCard />}
-                keyExtractor={(item) => item.toString()}
+                data={latestProperty}
+                renderItem={({ item }) => (
+                  <FeaturedCard
+                    item={item}
+                    onPress={() => handleCardPress(item.$id)}
+                  />
+                )}
+                keyExtractor={(item) => item.$id}
                 horizontal
                 bounces={false}
                 showsHorizontalScrollIndicator={false}
