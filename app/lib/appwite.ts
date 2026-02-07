@@ -112,16 +112,12 @@ export async function getProperties({ filter, query, limit}: {
     const buildQuery = [Query.orderDesc('$createdAt')];
 
     if(filter && filter !== 'All') {
-      buildQuery.push(Query.equal('type', filter))
+      buildQuery.push(Query.equal('properties', filter))
     }
 
     if(query) {
       buildQuery.push(
-        Query.or([
-          Query.search('name', query),
-          Query.search('description', query),
-          Query.search('address', query),
-        ])
+        Query.contains('name', query)
       )
     }
 
@@ -136,7 +132,7 @@ export async function getProperties({ filter, query, limit}: {
     return result.documents;
 
   } catch (error) {
-    console.error(error);
+    console.error("getProperties error:", error);
     return [];
   }
 }

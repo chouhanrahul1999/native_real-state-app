@@ -4,20 +4,20 @@ import { router, useLocalSearchParams } from "expo-router";
 import { categories } from "@/constants/data";
 
 const Filters = () => {
-  const params = useLocalSearchParams<{ Filter?: string }>();
+  const params = useLocalSearchParams<{ filter?: string }>();
   const [selectedCatagory, setSelectedCatagory] = useState(
-    params.Filter || "All",
+    params.filter || "All",
   );
 
   const handleCatagory = (catagory: string) => {
     if (selectedCatagory === catagory) {
         setSelectedCatagory("All");
-        router.setParams({ Filter: "All" });
+        router.setParams({ filter: "All" });
         return
     }
 
     setSelectedCatagory(catagory);
-    router.setParams({ Filter: catagory });
+    router.setParams({ filter: catagory });
   };
 
   return (
