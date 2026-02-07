@@ -1,4 +1,5 @@
 import { userGlobalContext } from "@/app/lib/global-provider";
+import seed from "@/app/lib/seed";
 import Card, { FeaturedCard } from "@/components/Card";
 import Filters from "@/components/Filters";
 import Search from "@/components/Search";
@@ -10,7 +11,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index() {
   const { user } = userGlobalContext();
-  
   return (
     <SafeAreaView className="bg-white h-full">
       <FlatList
