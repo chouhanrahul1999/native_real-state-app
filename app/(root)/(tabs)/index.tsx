@@ -1,7 +1,6 @@
 import { getLatestProperties, getProperties } from "@/app/lib/appwite";
 import { userGlobalContext } from "@/app/lib/global-provider";
 import { useAppwrite } from "@/app/lib/useAppwrite";
-import seed from "@/app/lib/seed";
 import Card, { FeaturedCard } from "@/components/Card";
 import Filters from "@/components/Filters";
 import NoResult from "@/components/NoResult";
@@ -12,7 +11,6 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect } from "react";
 import {
   ActivityIndicator,
-  Button,
   FlatList,
   Image,
   Text,
@@ -44,21 +42,6 @@ export default function Index() {
     skip: true,
   });
 
-  const handleSeed = async () => {
-    try {
-      await seed();
-      console.log("✅ Seed successful!");
-      refetch({
-        filter: params.filter || "All",
-        query: params.query || "",
-        limit: 6,
-      });
-    } catch (error: any) {
-      console.log("❌ Seed failed:");
-      console.log("Error message:", error?.message);
-    }
-  };
-
   const handleCardPress = (id: string) => {
     router.push(`/properties/${id}`);
   };
@@ -73,7 +56,6 @@ export default function Index() {
 
   return (
     <SafeAreaView className="bg-white h-full">
-      <Button onPress={handleSeed} title="Seed" />
       <FlatList
         data={properties}
         renderItem={({ item }) => (

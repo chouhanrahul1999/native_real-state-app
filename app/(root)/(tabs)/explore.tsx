@@ -37,7 +37,7 @@ export default function Explore() {
   });
 
   const handleCardPress = (id: string) => {
-    router.push(`/property/${id}` as any);
+    router.push(`/properties/${id}`);
   };
 
   useEffect(() => {
