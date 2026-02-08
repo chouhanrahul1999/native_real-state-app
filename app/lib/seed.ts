@@ -116,12 +116,11 @@ async function seed() {
     console.log(`Seeded ${galleries.length} galleries.`);
 
     // Seed Properties with Reviews
-    const propertyReviewsMap: { [key: string]: string[] } = {};
+    const propertyGalleryMap: { [key: string]: any[] } = {};
 
     for (let i = 1; i <= 20; i++) {
       const assignedAgent = agents[Math.floor(Math.random() * agents.length)];
-      const assignedGallery =
-        galleries[Math.floor(Math.random() * galleries.length)];
+      const assignedGalleries = getRandomSubset(galleries, 3, 5);
 
       const selectedFacilities = facilities
         .sort(() => 0.5 - Math.random())
@@ -155,6 +154,8 @@ async function seed() {
           agent: assignedAgent.$id,
         },
       );
+
+      propertyGalleryMap[property.$id] = assignedGalleries;
 
       // Seed 5-7 reviews for each property
       const reviewCount = Math.floor(Math.random() * 3) + 5; // 5-7 reviews
@@ -198,9 +199,8 @@ async function seed() {
         reviews.push(review);
       }
 
-      propertyReviewsMap[property.$id] = propertyReviewIds;
       console.log(
-        `Seeded property: ${property.name} with ${propertyReviewIds.length} reviews`,
+        `Seeded property: ${property.name} with ${propertyReviewIds.length} reviews and ${assignedGalleries.length} galleries`,
       );
     }
 

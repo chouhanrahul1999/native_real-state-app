@@ -47,7 +47,14 @@ export const useAppwrite = <T, P extends Record<string, string | number>>({
     if (!skip) {
       fetchData(params);
     }
-  }, []);
+  }, [skip, JSON.stringify(params)]);
+
+  useEffect(() => {
+    if (skip) {
+      setData(null);
+      setLoading(false);
+    }
+  }, [skip]);
 
   const refetch = async (newParams: P) => await fetchData(newParams);
 

@@ -17,6 +17,30 @@ import images from "@/constants/images";
 import { getAgentById, getPropertyById } from "@/app/lib/appwite";
 import { useAppwrite } from "@/app/lib/useAppwrite";
 
+interface PropertyData {
+  $id: string;
+  name: string;
+  image: string;
+  properties: string;
+  rating: number;
+  bedrooms: number;
+  bathrooms: number;
+  area: number;
+  agent: string;
+  facillites: string[];
+  address: string;
+  price: number;
+  reviews: any[];
+  gallery: any[];
+}
+
+interface AgentData {
+  $id: string;
+  name: string;
+  email: string;
+  avatar: string;
+}
+
 const Property = () => {
   const { id } = useLocalSearchParams<{ id?: string }>();
 
@@ -27,15 +51,15 @@ const Property = () => {
     params: {
       id: id!,
     },
-  });
+  }) as { data: PropertyData | null };
 
   const { data: agent } = useAppwrite({
     fn: getAgentById,
     params: {
-      id: property?.agent,
+      id: property?.agent || "",
     },
-    skip: !property?.agent, // Skip if agent ID doesn't exist
-  });
+    skip: !property?.agent,
+  }) as { data: AgentData | null };
 
 
   return (
@@ -185,10 +209,9 @@ const Property = () => {
                 renderItem={({ item }) => (
                   <Image
                     source={{ uri: item.image }}
-                    className="size-40 rounded-xl"
+                    className="size-40 rounded-xl mr-4"
                   />
                 )}
-                contentContainerClassName="flex gap-4 mt-3"
               />
             </View>
           )}

@@ -154,75 +154,25 @@ export async function getPropertyById({ id }: { id: string }) {
       config.propertiesCollectionId!,
       id,
     );
-    // Also fetch reviews associated with this property
-    try {
-      const reviewsResult = await database.listDocuments(
-        config.databaseId!,
-        config.reviewsCollectionId!,
-        [Query.equal("property", id), Query.orderDesc("$createdAt")],
-      );
+    
+    const reviewsResult = await database.listDocuments(
+      config.databaseId!,
+      config.reviewsCollectionId!,
+      [Query.equal("property", id), Query.orderDesc("$createdAt")],
+    );
 
-      const galleriesResult = await database.listDocuments(
-        config.databaseId!,
-        config.galleriesCollectionId!,
-        [Query.equal("property", id), Query.orderDesc("$createdAt")],
-      );
+    // Get random galleries since we don't have property relationship
+    const galleriesResult = await database.listDocuments(
+      config.databaseId!,
+      config.galleriesCollectionId!,
+      [Query.limit(5)],
+    );
 
-      return {
-        ...result,
-        reviews: reviewsResult?.documents || [],
-        gallery: galleriesResult?.documents || [],
-      };
-    } catch (err: any) {
-      // If the collection doesn't have the queried attribute (e.g. `property`),
-      // Appwrite will throw. This is expected in some setups — log concisely
-      // and fall back to client-side filtering instead of spamming a stack trace.
-      const isMissingAttributeError =
-        err?.response?.type === "general_query_invalid" ||
-        (typeof err?.message === "string" &&
-          err.message.includes("Attribute not found"));
-
-      if (isMissingAttributeError) {
-        console.warn(
-          "Appwrite: collection schema missing attribute 'property' - falling back to client-side filtering",
-        );
-      } else {
-        console.error("Error fetching related documents:", err);
-        console.error("Error message:", err?.message);
-        console.error("Error code:", err?.code);
-        console.error("Error response:", err?.response);
-      }
-
-      try {
-        // Try to retrieve a reasonable page of reviews and filter by property id
-        const allReviews = await database.listDocuments(
-          config.databaseId!,
-          config.reviewsCollectionId!,
-          [Query.limit(1000)],
-        );
-
-        const filteredReviews = (allReviews?.documents || []).filter(
-          (d: any) =>
-            d.property === id || d.property === id || d.property === id,
-        );
-
-        // Galleries in this project are not necessarily linked to a property in schema.
-        // Prefer any gallery already present on the property document, otherwise return empty.
-        const fallbackGallery = (result as any).gallery || [];
-
-        return {
-          ...result,
-          reviews: filteredReviews,
-          gallery: fallbackGallery,
-        };
-      } catch (fallbackErr) {
-        console.error(
-          "Fallback fetching related documents failed:",
-          fallbackErr,
-        );
-        return result;
-      }
-    }
+    return {
+      ...result,
+      reviews: reviewsResult?.documents || [],
+      gallery: galleriesResult?.documents || [],
+    };
   } catch (error) {
     console.error(error);
     return null;
