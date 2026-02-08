@@ -1,5 +1,5 @@
 import { ID } from "react-native-appwrite";
-import { database, config } from "./appwite";
+import { config, database } from "./appwite";
 import {
   agentImages,
   galleryImages,
@@ -25,25 +25,19 @@ const propertyTypes = [
   "Other",
 ];
 
-const facilities = [
-  "Laundry",
-  "Parking",
-  "Gym",
-  "wifi",
-  "Pet-friendly",
-];
+const facilities = ["Laundry", "Parking", "Gym", "wifi", "Pet-friendly"];
 
 function getRandomSubset<T>(
   array: T[],
   minItems: number,
-  maxItems: number
+  maxItems: number,
 ): T[] {
   if (minItems > maxItems) {
     throw new Error("minItems cannot be greater than maxItems");
   }
   if (minItems < 0 || maxItems > array.length) {
     throw new Error(
-      "minItems or maxItems are out of valid range for the array"
+      "minItems or maxItems are out of valid range for the array",
     );
   }
 
@@ -74,13 +68,13 @@ async function seed() {
       const collectionId = COLLECTIONS[key as keyof typeof COLLECTIONS];
       const documents = await database.listDocuments(
         config.databaseId!,
-        collectionId!
+        collectionId!,
       );
       for (const doc of documents.documents) {
         await database.deleteDocument(
           config.databaseId!,
           collectionId!,
-          doc.$id
+          doc.$id,
         );
       }
     }
@@ -98,29 +92,14 @@ async function seed() {
           name: `Agent ${i}`,
           email: `agent${i}@example.com`,
           avatar: agentImages[Math.floor(Math.random() * agentImages.length)],
-        }
+        },
       );
       agents.push(agent);
     }
     console.log(`Seeded ${agents.length} agents.`);
 
-    // Seed Reviews
-    const reviews = [];
-    for (let i = 1; i <= 20; i++) {
-      const review = await database.createDocument(
-        config.databaseId!,
-        COLLECTIONS.REVIEWS!,
-        ID.unique(),
-        {
-          name: `Reviewer ${i}`,
-          avatar: reviewImages[Math.floor(Math.random() * reviewImages.length)],
-          review: `This is a review by Reviewer ${i}.`,
-          rating: Math.floor(Math.random() * 5) + 1, // Rating between 1 and 5
-        }
-      );
-      reviews.push(review);
-    }
-    console.log(`Seeded ${reviews.length} reviews.`);
+    // Reviews will be created per property (no need for generic reviews)
+    const reviews: any[] = [];
 
     // Seed Galleries
     const galleries = [];
@@ -129,19 +108,20 @@ async function seed() {
         config.databaseId!,
         COLLECTIONS.GALLERY!,
         ID.unique(),
-        { image }
+        { image },
       );
       galleries.push(gallery);
     }
 
     console.log(`Seeded ${galleries.length} galleries.`);
 
-    // Seed Properties
+    // Seed Properties with Reviews
+    const propertyReviewsMap: { [key: string]: string[] } = {};
+
     for (let i = 1; i <= 20; i++) {
       const assignedAgent = agents[Math.floor(Math.random() * agents.length)];
-
-      const assignedReviews = getRandomSubset(reviews, 5, 7); // 5 to 7 reviews
-      const assignedGallery = galleries[Math.floor(Math.random() * galleries.length)]; // Single gallery for one-to-one
+      const assignedGallery =
+        galleries[Math.floor(Math.random() * galleries.length)];
 
       const selectedFacilities = facilities
         .sort(() => 0.5 - Math.random())
@@ -160,7 +140,8 @@ async function seed() {
         ID.unique(),
         {
           name: `Property ${i}`,
-          properties: propertyTypes[Math.floor(Math.random() * propertyTypes.length)],
+          properties:
+            propertyTypes[Math.floor(Math.random() * propertyTypes.length)],
           description: `This is the description for Property ${i}.`,
           address: `123 Property Street, City ${i}`,
           geolocation: `192.168.1.${i}, 192.168.1.${i}`,
@@ -172,11 +153,60 @@ async function seed() {
           facillites: selectedFacilities,
           image: image,
           agent: assignedAgent.$id,
-        }
+        },
       );
 
-      console.log(`Seeded property: ${property.name}`);
+      // Seed 5-7 reviews for each property
+      const reviewCount = Math.floor(Math.random() * 3) + 5; // 5-7 reviews
+      const propertyReviewIds: string[] = [];
+
+      const sampleReviews = [
+        "Amazing property! Loved the location and amenities.",
+        "Great place to live. Would definitely recommend.",
+        "The property exceeded my expectations. Highly satisfied!",
+        "Perfect home for my family. Excellent condition.",
+        "Wonderful experience. The agent was very helpful.",
+        "Beautiful design and great neighborhood.",
+        "Very comfortable and well-maintained property.",
+        "Fantastic investment. Great return potential.",
+        "Absolutely love it here. Can't ask for better!",
+        "Highly recommended. Best decision ever made.",
+        "Top-notch property with excellent features.",
+        "Exceeded all expectations. Worth every penny.",
+        "Great community and friendly atmosphere.",
+        "Professional service and quality property.",
+        "Couldn't be happier with my choice.",
+      ];
+
+      for (let j = 0; j < reviewCount; j++) {
+        const randomReviewText =
+          sampleReviews[Math.floor(Math.random() * sampleReviews.length)];
+        const review = await database.createDocument(
+          config.databaseId!,
+          COLLECTIONS.REVIEWS!,
+          ID.unique(),
+          {
+            name: `Reviewer ${Math.floor(Math.random() * 100) + 1}`,
+            avatar:
+              reviewImages[Math.floor(Math.random() * reviewImages.length)],
+            review: randomReviewText,
+            rating: Math.floor(Math.random() * 5) + 1,
+            property: property.$id, // Link review to property
+          },
+        );
+        propertyReviewIds.push(review.$id);
+        reviews.push(review);
+      }
+
+      propertyReviewsMap[property.$id] = propertyReviewIds;
+      console.log(
+        `Seeded property: ${property.name} with ${propertyReviewIds.length} reviews`,
+      );
     }
+
+    console.log(
+      `Seeded ${reviews.length} total reviews across all properties.`,
+    );
 
     console.log("Data seeding completed.");
     return true;

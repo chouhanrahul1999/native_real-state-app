@@ -37,7 +37,6 @@ const Property = () => {
     skip: !property?.agent, // Skip if agent ID doesn't exist
   });
 
-  console.log("Agent object:", JSON.stringify(agent, null, 2));
 
   return (
     <View>
