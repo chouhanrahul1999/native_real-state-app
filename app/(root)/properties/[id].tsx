@@ -1,22 +1,21 @@
+import { router, useLocalSearchParams } from "expo-router";
 import {
+  Dimensions,
   FlatList,
   Image,
+  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
-  Dimensions,
-  Platform,
 } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
 
+import Comment from "@/components/Comments";
 import icons from "@/constants/icons";
 import images from "@/constants/images";
-import Comment from "@/components/Comments";
-import { facilities } from "@/constants/data";
 
+import { getAgentById, getPropertyById } from "@/app/lib/appwite";
 import { useAppwrite } from "@/app/lib/useAppwrite";
-import { getPropertyById } from "@/app/lib/appwite";
 
 const Property = () => {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -29,6 +28,16 @@ const Property = () => {
       id: id!,
     },
   });
+
+  const { data: agent } = useAppwrite({
+    fn: getAgentById,
+    params: {
+      id: property?.agent,
+    },
+    skip: !property?.agent, // Skip if agent ID doesn't exist
+  });
+
+  console.log("Agent object:", JSON.stringify(agent, null, 2));
 
   return (
     <View>
@@ -81,7 +90,7 @@ const Property = () => {
           <View className="flex flex-row items-center gap-3">
             <View className="flex flex-row items-center px-4 py-2 bg-primary-100 rounded-full">
               <Text className="text-xs font-rubik-bold text-primary-300">
-                {property?.type}
+                {property?.properties}
               </Text>
             </View>
 
@@ -122,16 +131,16 @@ const Property = () => {
             <View className="flex flex-row items-center justify-between mt-4">
               <View className="flex flex-row items-center">
                 <Image
-                  source={{ uri: property?.agent?.avatar }}
+                  source={{ uri: agent?.avatar }}
                   className="size-14 rounded-full"
                 />
 
                 <View className="flex flex-col items-start justify-center ml-3">
                   <Text className="text-lg text-black-300 text-start font-rubik-bold">
-                    {property?.agent?.name}
+                    {agent?.name}
                   </Text>
                   <Text className="text-sm text-black-200 text-start font-rubik-medium">
-                    {property?.agent?.email}
+                    {agent?.email}
                   </Text>
                 </View>
               </View>
@@ -144,50 +153,23 @@ const Property = () => {
           </View>
 
           <View className="mt-7">
-            <Text className="text-black-300 text-xl font-rubik-bold">
-              Overview
-            </Text>
-            <Text className="text-black-200 text-base font-rubik mt-2">
-              {property?.description}
-            </Text>
-          </View>
-
-          <View className="mt-7">
-            <Text className="text-black-300 text-xl font-rubik-bold">
-              Facilities
-            </Text>
-
-            {property?.facilities && property.facilities.length > 0 && (
-              <View className="flex flex-row flex-wrap items-start justify-start mt-2 gap-5">
-                {property?.facilities.map((item: string, index: number) => {
-                  const facility = facilities.find(
-                    (facility) => facility.title === item
-                  );
-
-                  return (
-                    <View
-                      key={index}
-                      className="flex flex-1 flex-col items-center min-w-16 max-w-20"
-                    >
-                      <View className="size-14 bg-primary-100 rounded-full flex items-center justify-center">
-                        <Image
-                          source={facility ? facility.icon : icons.info}
-                          className="size-6"
-                        />
-                      </View>
-
-                      <Text
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                        className="text-black-300 text-sm text-center font-rubik mt-1.5"
-                      >
-                        {item}
-                      </Text>
-                    </View>
-                  );
-                })}
-              </View>
-            )}
+            <Text className="text-xl font-rubik-bold mb-4">Facilities</Text>
+            <View className="flex flex-row flex-wrap gap-2">
+              {property?.facillites && property.facillites.length > 0 ? (
+                property.facillites.map((facility: any, index: number) => (
+                  <View
+                    key={index}
+                    className="bg-primary-100 px-4 py-2 rounded-full"
+                  >
+                    <Text className="text-sm font-rubik-medium text-primary-300">
+                      {facility}
+                    </Text>
+                  </View>
+                ))
+              ) : (
+                <Text className="text-gray-500">No facilities available</Text>
+              )}
+            </View>
           </View>
 
           {property?.gallery && property.gallery.length > 0 && (
@@ -235,7 +217,8 @@ const Property = () => {
                 <View className="flex flex-row items-center">
                   <Image source={icons.star} className="size-6" />
                   <Text className="text-black-300 text-xl font-rubik-bold ml-2">
-                    {property?.rating} ({property?.reviews?.length || 0} reviews)
+                    {property?.rating} ({property?.reviews?.length || 0}{" "}
+                    reviews)
                   </Text>
                 </View>
 

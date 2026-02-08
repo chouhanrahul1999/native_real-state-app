@@ -150,3 +150,17 @@ export async function getPropertyById({ id }: { id: string }) {
     return null;
   }
 }
+
+export async function getAgentById({ id }: { id: string }) {
+  try {
+    const result = await database.getDocument(
+      config.databaseId!,
+      config.agentsCollectionId!,
+      id
+    );
+    return result;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
