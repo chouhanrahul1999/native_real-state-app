@@ -43,7 +43,7 @@ export default function Index() {
   });
 
   const handleCardPress = (id: string) => {
-    router.push(`/property/${id}` as any);
+    router.push(`/properties/${id}`);
   };
 
   useEffect(() => {
